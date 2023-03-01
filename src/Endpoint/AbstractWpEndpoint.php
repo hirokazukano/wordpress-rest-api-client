@@ -3,6 +3,7 @@
 namespace Vnn\WpApiClient\Endpoint;
 
 use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 use Vnn\WpApiClient\WpClient;
 
@@ -79,14 +80,20 @@ abstract class AbstractWpEndpoint
 
     /**
      * @param int $id
+     * @param array $query e.g. ['force' => true]
+     * @param array $headers
+     * @param null|StreamInterface|resource|string $body
      * @return array
      */
-    public function delete($id = null)
+    public function delete($id = null, array $query = null, array $headers = [], $body = null)
     {
         $uri = $this->getEndpoint();
         $uri .= (is_null($id)?'': '/' . $id);
+        if (!is_null($query)) {
+            $uri .= '?' . http_build_query($query);
+        }
 
-        $request = new Request('DELETE', $uri);
+        $request = new Request('DELETE', $uri, $headers, $body);
         $response = $this->client->send($request);
 
         if ($response->hasHeader('Content-Type')
